@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.bundles.hilt)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
