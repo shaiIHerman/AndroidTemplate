@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.templateapplication.screens.DetailsScreen
 import com.example.templateapplication.screens.HomeScreen
 import com.example.templateapplication.ui.theme.TemplateApplicationTheme
 import com.example.templateapplication.ui.theme.TemplatePrimary
@@ -45,7 +46,13 @@ class MainActivity : ComponentActivity() {
             modifier = modifier.background(color = TemplatePrimary)
         ) {
             composable(route = "home_screen") {
-                HomeScreen()
+                HomeScreen { id ->
+                    navController.navigate("details_screen/$id")
+                }
+            }
+            composable(route = "details_screen/{id}") { args ->
+                val id = args.arguments?.getString("id") ?: ""
+                DetailsScreen(id = id)
             }
         }
     }

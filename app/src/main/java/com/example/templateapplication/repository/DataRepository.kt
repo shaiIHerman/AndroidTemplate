@@ -14,4 +14,12 @@ class DataRepository @Inject constructor(private val apiService: ApiService) {
             ApiOperation.Failure(e)
         }
     }
+
+    suspend fun getDataObject(id: Int): ApiOperation<Character> {
+        return try {
+            ApiOperation.Success(data = apiService.getDataObject(id).toDomainCharacter())
+        } catch (e: Exception) {
+            ApiOperation.Failure(e)
+        }
+    }
 }

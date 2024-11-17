@@ -1,6 +1,7 @@
 package com.example.templateapplication.screens
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,11 +35,11 @@ import com.example.templateapplication.viewmodels.HomeScreenViewModel
 sealed interface HomeScreenStateView {
     object Loading : HomeScreenStateView
     data class Error(val message: String) : HomeScreenStateView
-    data class Success(val characters: List<Character> = emptyList()) : HomeScreenStateView
+    data class Success(val itemList: List<Character> = emptyList()) : HomeScreenStateView
 }
 
 @Composable
-fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel()) {
+fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel(), onRowClicked: (String) -> Unit) {
 
     val viewState by viewModel.viewState.collectAsState()
 
@@ -48,29 +49,28 @@ fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel()) {
 
     when (val state = viewState) {
         HomeScreenStateView.Loading -> LoadingState()
-        is HomeScreenStateView.Success -> CharactersList(state)
+        is HomeScreenStateView.Success -> DataList(state, onRowClicked)
         is HomeScreenStateView.Error -> ErrorState(exception = state.message)
     }
 }
 
 @Composable
-fun CharactersList(state: HomeScreenStateView.Success) {
+fun DataList(state: HomeScreenStateView.Success, onRowClicked: (String) -> Unit) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(16.dp),
         modifier = Modifier.clipToBounds()
     ) {
-        items(state.characters) { character ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .border(width = 1.dp, shape = RoundedCornerShape(12.dp), color = Color.White)
-                    .clip(shape = RoundedCornerShape(12.dp))
-            ) {
+        items(state.itemList) { character ->
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .border(width = 1.dp, shape = RoundedCornerShape(12.dp), color = Color.White)
+                .clip(shape = RoundedCornerShape(12.dp))
+                .clickable { onRowClicked(character.id.toString()) }) {
                 SubcomposeAsyncImage(
                     model = character.imageUrl,
-                    contentDescription = "character image",
+                    contentDescription = "item image",
                     loading = { LoadingState() },
                     modifier = Modifier
                         .clip(shape = RoundedCornerShape(12.dp))

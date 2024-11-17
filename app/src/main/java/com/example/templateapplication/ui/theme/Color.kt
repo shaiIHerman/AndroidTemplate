@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val TemplatePrimary = Color(0xff262d3a)
 val TemplateAction = Color(0xffb5eefd)
+val TemplateTextPrimary = Color(0xffffffff)

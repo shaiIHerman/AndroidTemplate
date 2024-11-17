@@ -22,7 +22,7 @@ class HomeScreenViewModel @Inject constructor(private val dataRepository: DataRe
     fun fetchListData() = viewModelScope.launch {
         val data = dataRepository.getDataList()
         data.onSuccess { characters ->
-            _viewState.update { return@update HomeScreenStateView.Success(characters = characters) }
+            _viewState.update { return@update HomeScreenStateView.Success(itemList = characters) }
         }.onFailure { e ->
             _viewState.update { return@update HomeScreenStateView.Error(e.message ?: "") }
         }
