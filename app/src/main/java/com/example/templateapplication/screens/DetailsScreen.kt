@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.templateapplication.components.ErrorState
 import com.example.templateapplication.components.LoadingState
@@ -34,11 +33,11 @@ sealed interface DetailsScreenStateView {
 }
 
 @Composable
-fun DetailsScreen(id: String, viewModel: DetailsScreenViewModel = hiltViewModel()) {
+fun DetailsScreen(viewModel: DetailsScreenViewModel) {
     val viewState by viewModel.viewState.collectAsState()
 
     LaunchedEffect(key1 = viewModel) {
-        viewModel.fetchObjectById(id)
+        viewModel.fetchObjectById()
     }
 
     when (val state = viewState) {
