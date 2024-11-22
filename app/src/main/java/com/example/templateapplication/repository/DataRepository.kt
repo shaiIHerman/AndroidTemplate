@@ -15,6 +15,14 @@ class DataRepository @Inject constructor(private val apiService: ApiService) {
         }
     }
 
+    suspend fun getNextPage(pageNumber: Int): ApiOperation<List<Character>> {
+        return try {
+            ApiOperation.Success(data = apiService.getPage(pageNumber = pageNumber).results.map { remoteCharacter -> remoteCharacter.toDomainCharacter() })
+        } catch (e: Exception) {
+            ApiOperation.Failure(e)
+        }
+    }
+
     suspend fun getDataObject(id: Int): ApiOperation<Character> {
         return try {
             ApiOperation.Success(data = apiService.getDataObject(id).toDomainCharacter())

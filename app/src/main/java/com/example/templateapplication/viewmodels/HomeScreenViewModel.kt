@@ -18,11 +18,27 @@ class HomeScreenViewModel @Inject constructor(private val dataRepository: DataRe
 
     private val _viewState = MutableStateFlow<HomeScreenStateView>(HomeScreenStateView.Loading)
     val viewState: StateFlow<HomeScreenStateView> = _viewState.asStateFlow()
+    private var nextPage = 0
 
     fun fetchListData() = viewModelScope.launch {
         val data = dataRepository.getDataList()
-        data.onSuccess { characters ->
-            _viewState.update { return@update HomeScreenStateView.Success(itemList = characters) }
+        data.onSuccess { items ->
+            nextPage++
+            _viewState.update { return@update HomeScreenStateView.Success(itemList = items) }
+        }.onFailure { e ->
+            _viewState.update { return@update HomeScreenStateView.Error(e.message ?: "") }
+        }
+    }
+
+    fun onLoadMore() = viewModelScope.launch {
+        val data = dataRepository.getNextPage(nextPage)
+        data.onSuccess { items ->
+            nextPage++
+            _viewState.update { currentState ->
+                val currentItems =
+                    (currentState as? HomeScreenStateView.Success)?.itemList ?: emptyList()
+                return@update HomeScreenStateView.Success(itemList = currentItems + items)
+            }
         }.onFailure { e ->
             _viewState.update { return@update HomeScreenStateView.Error(e.message ?: "") }
         }

@@ -4,11 +4,15 @@ import com.example.templateapplication.network.models.remote.AllCharacters
 import com.example.templateapplication.network.models.remote.RemoteCharacter
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
     @GET("character")
     suspend fun getDataList(): AllCharacters
+
+    @GET("character")
+    suspend fun getPage(@Query("page") pageNumber: Int): AllCharacters
 
     @GET("character/{id}")
     suspend fun getDataObject(@Path("id") id: Int): RemoteCharacter

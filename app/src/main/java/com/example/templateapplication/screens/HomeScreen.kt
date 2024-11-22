@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,45 +50,63 @@ fun HomeScreen(viewModel: HomeScreenViewModel = hiltViewModel(), onRowClicked: (
         viewModel.fetchListData()
     })
 
+    val scrollState = rememberLazyListState()
+    val fetchNextPage: Boolean by remember {
+        derivedStateOf {
+            val currentCharacterCount = (viewState as? HomeScreenStateView.Success)?.itemList?.size
+                ?: return@derivedStateOf false
+
+            val lastDisplayedIndex = scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                ?: return@derivedStateOf false
+
+            return@derivedStateOf lastDisplayedIndex >= currentCharacterCount - 10
+        }
+    }
+
+    LaunchedEffect(key1 = fetchNextPage, block = {
+        if (fetchNextPage) viewModel.onLoadMore()
+    })
+
     when (val state = viewState) {
         HomeScreenStateView.Loading -> LoadingState()
-        is HomeScreenStateView.Success -> DataList(state, onRowClicked)
         is HomeScreenStateView.Error -> ErrorState(exception = state.message)
-    }
-}
-
-@Composable
-fun DataList(state: HomeScreenStateView.Success, onRowClicked: (String) -> Unit) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(16.dp),
-        modifier = Modifier.clipToBounds()
-    ) {
-        items(state.itemList) { character ->
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .border(width = 1.dp, shape = RoundedCornerShape(12.dp), color = Color.White)
-                .clip(shape = RoundedCornerShape(12.dp))
-                .clickable { onRowClicked(character.id.toString()) }) {
-                SubcomposeAsyncImage(
-                    model = character.imageUrl,
-                    contentDescription = "item image",
-                    loading = { LoadingState() },
-                    modifier = Modifier
-                        .clip(shape = RoundedCornerShape(12.dp))
-                        .aspectRatio(1f)
-                )
-                Text(
-                    text = character.name,
-                    fontSize = 24.sp,
-                    color = TemplateAction,
-                    modifier = Modifier
+        is HomeScreenStateView.Success -> {
+            LazyColumn(
+                state = scrollState,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier.clipToBounds()
+            ) {
+                items(items = state.itemList, key = { it.id }) { character ->
+                    Row(modifier = Modifier
                         .fillMaxWidth()
-                        .align(alignment = Alignment.CenterVertically)
-                        .wrapContentWidth(align = Alignment.CenterHorizontally)
-                )
+                        .height(140.dp)
+                        .border(
+                            width = 1.dp, shape = RoundedCornerShape(12.dp), color = Color.White
+                        )
+                        .clip(shape = RoundedCornerShape(12.dp))
+                        .clickable { onRowClicked(character.id.toString()) }) {
+                        SubcomposeAsyncImage(
+                            model = character.imageUrl,
+                            contentDescription = "item image",
+                            loading = { LoadingState() },
+                            modifier = Modifier
+                                .clip(shape = RoundedCornerShape(12.dp))
+                                .aspectRatio(1f)
+                        )
+                        Text(
+                            text = character.name,
+                            fontSize = 24.sp,
+                            color = TemplateAction,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(alignment = Alignment.CenterVertically)
+                                .wrapContentWidth(align = Alignment.CenterHorizontally)
+                        )
+                    }
+                }
             }
         }
     }
 }
+
